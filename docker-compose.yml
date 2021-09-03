@@ -1,6 +1,7 @@
 version: '3.2'
 services:
   elasticsearch:
+    container_name: elasticsearch
     build:
       context: elasticsearch/
       args:
@@ -23,6 +24,7 @@ services:
       - elk
 
   logstash:
+    container_name: logstash
     build:
       context: logstash/
       args:
@@ -41,6 +43,8 @@ services:
     ports:
       - "5000:5000"
       - "9600:9600"
+    healthcheck:
+      test: ["CMD", "curl","-s" ,"-f", "http://elasticsearch:9200/_cat/health"]
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
@@ -49,6 +53,7 @@ services:
       - elasticsearch
 
   kibana:
+    container_name: kibana
     build:
       context: kibana/
       args:
@@ -82,7 +87,26 @@ services:
     depends_on:
       - elasticsearch
 
+  reports:
+    container_name: reports
+    image: skedler/reports:latest
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - reportdata:/var/lib/skedler
+      - ./reporting/reporting.yml:/opt/skedler/config/reporting.yml
+    command: /opt/skedler/bin/skedler
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk
+    ports:
+      - 3000:3000
+
   nginx:
+    container_name: nginx
     image: nginx:latest
     ports:
         - 8080:80
@@ -91,6 +115,8 @@ services:
     command: /bin/bash -c "nginx -g 'daemon off;'"
     ulimits:
       nproc: 65535
+    depends_on:
+      - elasticsearch
     networks:
       - elk
 
@@ -100,3 +126,6 @@ networks:
 
 volumes:
   elasticsearch:
+    driver: local
+  reportdata:
+    driver: local

@@ -12,7 +12,7 @@ services:
         target: /usr/share/elasticsearch/config/elasticsearch.yml
         read_only: true
       - type: volume
-        source: elasticsearch
+        source: esdata1
         target: /usr/share/elasticsearch/data
     ports:
       - "9200:9200"
@@ -89,6 +89,7 @@ services:
 
   reports:
     container_name: reports
+    hostname: reports
     image: skedler/reports:latest
     privileged: true
     cap_add:
@@ -103,7 +104,7 @@ services:
     networks:
       - elk
     ports:
-      - 3000:3000
+      - 5602:3000
 
   nginx:
     container_name: nginx
@@ -125,7 +126,15 @@ networks:
     driver: bridge
 
 volumes:
-  elasticsearch:
+  esdata1:
     driver: local
+    driver_opts:
+            type: none
+            device: "./esdata1"
+            o: bind 
   reportdata:
     driver: local
+    driver_opts:
+            type: none
+            device: "./reportdata"
+            o: bind 

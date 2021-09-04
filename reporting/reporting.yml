@@ -4,7 +4,7 @@
 #port: 3000
 
 # The host to bind the skedler server to.
-#host: "0.0.0.0"
+# host: reports
 
 # Enables you to specify a path to mount skedler at if you are running behind a proxy. This only affects the URLs generated
 # by skedler, your proxy is expected to remove the basePath value before forwarding requests to skedler.
